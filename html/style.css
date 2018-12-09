@@ -1,3 +1,6 @@
+
+/*general styles*/
+
 body {
   font: normal 18px/1.5 "Fira Sans", "Helvetica Neue", sans-serif;
   background: #3AAFAB;
@@ -5,9 +8,6 @@ body {
   padding: 50px 0;
 }
 
-form{
-	margin: auto;
-}
 #container {
   width: 80%;
   max-width: 1200px;
@@ -16,6 +16,12 @@ form{
 
 .container * {
   box-sizing: border-box;
+}
+
+/*index.html*/
+
+form{
+  margin: auto;
 }
 
 .flex-outer{
@@ -44,7 +50,7 @@ form{
 
 .flex-outer > li > input{
 	flex: 1 0 10px;
-	  padding: 5px;
+	padding: 5px;
   border: none;
   max-width: 20%;
 }
@@ -59,4 +65,41 @@ form{
   text-transform: uppercase;
   letter-spacing: .09em;
   border-radius: 2px;
+}
+
+/*loading page*/
+#loading_text{
+  margin: auto;
+  text-align: center;
+  margin-top: 200px;
+  max-width: 50%;
+}
+
+#text1{
+    font-size: 40px;
+}
+
+#text2{
+    font-size: 20px;
+}
+
+.loader{
+  border: 5px solid #3AAFAB; 
+  border-top: 5px solid #f3f3f3;
+  border-right: 5px solid #f3f3f3;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  margin: auto;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#start_time{
+  margin-top: 20px;
+    font-size: 15px;
 }

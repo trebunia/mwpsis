@@ -42,32 +42,3 @@ s.t. c3: X[1,3] + X[5,3] + X[6,3] <= N[3]; #Liczba dyskow typu A w roznych konfi
 s.t. c4: X[1,4] + X[5,4] + X[6,4] <= N[4]; #Liczba dyskow typu A w roznych konfiguracjach RAID nie przekracza calkowitej liczby dyskow A
 
 #Input Data
-
-data;
-
-param N := 1 1
-           2 1
-	   3 1
-	   4 1;
-
-param V := 1 1
-	   2 1
- 	   3 1
-	   4 1;
-
-param S := 1 1
-	   2 1
-	   3 1
-	   4 1;
-
-param C :    1 2 3 4 :=
-           1 1 1 1 1
-           5 1 1 1 1
-	   6 1 1 1 1;
-	   
-
-param R := 1 1
-           5 1
-	   6 1;	   
-
-end;

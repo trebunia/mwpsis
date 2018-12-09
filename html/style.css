@@ -103,3 +103,12 @@ form{
   margin-top: 20px;
     font-size: 15px;
 }
+
+/*results*/
+
+#optimal_results {
+  margin-top: 100px;
+}
+#optimal_results > h1, h2 {
+  text-align: center;
+}

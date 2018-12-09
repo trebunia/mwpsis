@@ -1,5 +1,5 @@
 # mwpsis
-Projekt z Matematyki w Projektowaniu Sieci i Systemów
+Projekt z Matematyki w Projektowaniu Sieci i Systemów\
 Calosc testowana byla na debianie i powinno dzialac.
 Trzeba zainstalowac nastepujace pakiety:
 ```bash

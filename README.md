@@ -5,7 +5,7 @@ Trzeba zainstalowac nastepujace pakiety:
 ```bash
 sudo apt-get install apache2 git build-essentials make g++
 ```
-Plik 000-default.conf trzeba przeniesc do /etc/apache2/sites-available.conf
+Plik 000-default.conf trzeba przeniesc do /etc/apache2/sites-available/
 Katalog html trzeba przeniesc do /var/www
 
 Aby skompilowac kcgi:

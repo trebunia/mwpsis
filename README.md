@@ -19,7 +19,7 @@ sudo make install
 
 Aby skompilowac hdd.c nalezy wykonac:
 ```bash
-g++ hdd.c -o hdd -lkcgihtml -lkcgi
+g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm
 ```
 
 Kompilowanie solvera zgodnia z instrukcja na labach czyli:

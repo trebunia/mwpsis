@@ -1,0 +1,1 @@
+g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm -lz -llapack -lbz2

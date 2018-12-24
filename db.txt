@@ -1,0 +1,1 @@
+create table optymalizacje (unique_id text unique not null, start_time timestamp default current_timestamp not null, end_time timestamp default current_timestamp, status text not null, wynik text);

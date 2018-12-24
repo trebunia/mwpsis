@@ -1,5 +1,5 @@
 // to compile run
-// g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm
+// g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn
 
 #include <sys/types.h> /* size_t, ssize_t */
 #include <stdarg.h> /* va_list */
@@ -15,6 +15,12 @@
 #include <unistd.h>
 #include <fstream>
 #include <string>
+#include "mysql_connection.h"
+
+#include <cppconn/driver.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 
 
 
@@ -77,28 +83,140 @@ static void generate_data(struct kreq *r){
 	myfile.close();
 }
 
+sql::ResultSet* run_query(std::string query)
+{
+	try {
+  sql::Driver *driver;
+  sql::Connection *con;
+  sql::Statement *stmt;
+  sql::ResultSet *res;
+
+  /* Create a connection */
+  driver = get_driver_instance();
+  con = driver->connect("tcp://127.0.0.1:3306", "kcgi", "toor");
+  /* Connect to the MySQL test database */
+  con->setSchema("kcgi");
+
+  stmt = con->createStatement();
+  res = stmt->executeQuery(query.c_str());
+
+	return res;
+
+} catch (sql::SQLException &e) {
+  std::cout << "# ERR: SQLException in " << __FILE__;
+  std::cout << "(" << __FUNCTION__ << ") on line " \
+     << __LINE__ << std::endl;
+  std::cout << "# ERR: " << e.what();
+  std::cout << " (MySQL error code: " << e.getErrorCode();
+  std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+}
+}
+
+int exe_query(std::string query)
+{   
+  int res;
+    try {
+  sql::Driver *driver;
+  sql::Connection *con;
+  sql::Statement *stmt;
+
+  /* Create a connection */
+  driver = get_driver_instance();
+  con = driver->connect("tcp://127.0.0.1:3306", "kcgi", "toor");
+  /* Connect to the MySQL test database */
+  con->setSchema("kcgi");
+
+  stmt = con->createStatement();
+  res = stmt->execute(query.c_str());
+
+  return res;
+
+} catch (sql::SQLException &e) {
+  std::cout << "# ERR: SQLException in " << __FILE__;
+  std::cout << "(" << __FUNCTION__ << ") on line " \
+     << __LINE__ << std::endl;
+  std::cout << "# ERR: " << e.what(); 
+  std::cout << " (MySQL error code: " << e.getErrorCode();
+  std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+  return res;
+}
+}
+
+
+static int running(){
+	sql::ResultSet *res;
+	res = run_query("select unique_id from optymalizacje where status = 'inprogress';");
+	if (res->next()) {
+		delete res;
+		return 1;
+	} else {
+		delete res;
+		return 0;
+	}
+}
+
+std::string gen_random() {
+    int len = 8;
+    std::string s;
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    srand(time(0));
+    for (int i = 0; i < len; ++i) {
+        s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    return s;
+}
+
+
 static void optimization(struct kreq *r) {
  	ClpSimplex model;
  	int status;
 	char* data;
 	std::string line;
+	std::string out;
     const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	generate_data(r);
 	system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1");
-	system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
-	std::ifstream myfile;
-	myfile.open("/var/www/html/cgi-bin/output.csv");
-  if (myfile.is_open())
-  {
-    while ( getline (myfile,line) )
-    {
-      std::cout << "\n<p>" << line << "\n" << std::endl;
-    }
-    myfile.close();
-  }
+	
+	if (running() == 0){
+		std::string unique_id;
+		unique_id = gen_random();
+		std::string query;
+		query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
+		exe_query(query);
+		std::cout << "<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " << unique_id;
+		system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
+		query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
+		exe_query(query);
+		std::cout << "<p>Optymalizacja (kod " << unique_id << ") zostala ukonczona";
 
-  else std::cout << "Unable to open file"; 
+	        std::ifstream myfile;
+       		myfile.open("/var/www/html/cgi-bin/output.csv");
+		out = "";
+		if (myfile.is_open())
+		  {
+		    while ( getline (myfile,line) )
+		    {
+		      out += "\n<p>" + line + "\n";
+		    }
+		    myfile.close();
+		    std::cout << out;
+		  }
+
+		else {
+		     out += "Unable to open file"; 
+		     std::cout << out;
+		}
+		exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
+
+
+	} else {
+		std::cout << "<h1>Optymalizacja jest aktualnie uruchomiona</h1>";
+	}
 }
 
 static void process_safe(struct kreq *r) {

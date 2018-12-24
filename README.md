@@ -3,7 +3,8 @@ Projekt z Matematyki w Projektowaniu Sieci i Systemów\
 Calosc testowana byla na debianie i powinno dzialac.
 Trzeba zainstalowac nastepujace pakiety:
 ```bash
-sudo apt-get install apache2 git build-essentials make g++
+sudo apt-get install apache2 git build-essentials make g++ libmysqlcppconn-dev libmysqlcppconn7v5 mysql-server 
+
 ```
 Plik 000-default.conf trzeba przeniesc do /etc/apache2/sites-available/
 Katalog html trzeba przeniesc do /var/www
@@ -19,7 +20,7 @@ sudo make install
 
 Aby skompilowac hdd.c nalezy wykonac:
 ```bash
-g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm
+g++ hdd.c -o hdd -lkcgihtml -lkcgi -L/usr/local/lib -lClp -L/usr/local/lib -lcoinglpk -ldl -lm -L/usr/local/lib -lCoinUtils -lm -L/usr/local/lib -lcoinglpk -ldl -lm -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn
 ```
 
 Kompilowanie solvera zgodnia z instrukcja na labach czyli:

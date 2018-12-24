@@ -100,7 +100,7 @@ sql::ResultSet* run_query(std::string query)
   stmt = con->createStatement();
   res = stmt->executeQuery(query.c_str());
 
-	return res;
+  return res;
 
 } catch (sql::SQLException &e) {
   std::cout << "# ERR: SQLException in " << __FILE__;
@@ -171,28 +171,73 @@ std::string gen_random() {
 }
 
 
+static void print_loading(){
+sql::ResultSet *res;
+res = run_query("select unique_id, start_time from optymalizacje where status = 'inprogress';");
+res->next();
+std::cout << "<!DOCTYPE html> \
+				<html> \
+				<head> \
+				<title>Solve your database design problems!</title> \
+				<link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"> \
+				</head> \
+				<body> \
+				<div class=\"container\"> \
+				<div id=loading_text> \
+				<p id=\"text1\">Your request is being processed. </p>\
+				<p id=\"text2\"> Please wait, it may take a while... </p>\
+				<div class=\"loader\"></div>\
+				<p id=\"start_time\">Solver already running for: "
+                << res->getString("unique_id")
+				<< "</p> Optimalization start time: " 
+                << res->getString("start_time")
+			    << "</div> \
+				</div> \
+				</body>\
+				</html>";
+	delete res;
+}
+
+static void print_results(std::string msg){
+std::cout << "<!DOCTYPE html> \
+			<html> \
+			<head> \
+				<title>Solve your database design problems!</title> \
+				<link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"> \
+			</head> \
+			<body> \
+				<div id=\"container\">"
+		  << msg ;
+			"</div> \
+			</body> \
+			</html>";
+
+}
+
 static void optimization(struct kreq *r) {
- 	ClpSimplex model;
  	int status;
 	char* data;
 	std::string line;
 	std::string out;
-    const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
+        const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	generate_data(r);
+
 	system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1");
 	
 	if (running() == 0){
+
 		std::string unique_id;
 		unique_id = gen_random();
 		std::string query;
 		query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
 		exe_query(query);
-		std::cout << "<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " << unique_id;
+		print_results("<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " + unique_id);
 		system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
 		query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
 		exe_query(query);
-		std::cout << "<p>Optymalizacja (kod " << unique_id << ") zostala ukonczona";
+		std::string msg;
+		msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
 
 	        std::ifstream myfile;
        		myfile.open("/var/www/html/cgi-bin/output.csv");
@@ -201,21 +246,21 @@ static void optimization(struct kreq *r) {
 		  {
 		    while ( getline (myfile,line) )
 		    {
-		      out += "\n<p>" + line + "\n";
+		      msg += "\n<p>" + line + "\n";
 		    }
 		    myfile.close();
-		    std::cout << out;
+		    print_results(msg);
 		  }
 
 		else {
-		     out += "Unable to open file"; 
-		     std::cout << out;
+		     msg += "Unable to open file"; 
+		     print_results(msg);
 		}
 		exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
 
 
 	} else {
-		std::cout << "<h1>Optymalizacja jest aktualnie uruchomiona</h1>";
+		print_loading();
 	}
 }
 
@@ -224,56 +269,6 @@ static void process_safe(struct kreq *r) {
 	struct khtmlreq req;
 	khtml_open(&req, r, 0);
 	khtml_elem(&req, KELEM_P);
-	khttp_puts(r, "<p>\n");
-	khttp_puts(r, "The HDD_8 value is ");
-    if ((p = r->fieldmap[KEY_HDD_8]))
-    	khttp_puts(r, p->parsed.s);
-
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The HDD_6 value is ");
-    if ((p = r->fieldmap[KEY_HDD_6]))
-    	khttp_puts(r, p->parsed.s);
-
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The SSD_1 value is ");
-    if ((p = r->fieldmap[KEY_SSD_1]))
-    	khttp_puts(r, p->parsed.s);
-
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The SSD_512 value is ");
-    if ((p = r->fieldmap[KEY_SSD_512]))
-    	khttp_puts(r, p->parsed.s);
-
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID1_HDD value is ");
-    if ((p = r->fieldmap[KEY_RAID1_HDD]))
-    	khttp_puts(r, p->parsed.s);
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID5_HDD value is ");
-
-    if ((p = r->fieldmap[KEY_RAID5_HDD]))
-    	khttp_puts(r, p->parsed.s);
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID6_HDD value is ");
-
-    if ((p = r->fieldmap[KEY_RAID6_HDD]))
-    	khttp_puts(r, p->parsed.s);
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID1_SSD value is ");
-
-    if ((p = r->fieldmap[KEY_RAID1_SSD]))
-    	khttp_puts(r, p->parsed.s);
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID5_SSD value is ");
-
-    if ((p = r->fieldmap[KEY_RAID5_SSD]))
-    	khttp_puts(r, p->parsed.s);
-
-    khttp_puts(r, "<p>\n");
-    khttp_puts(r, "The RAID6_SSD value is ");
-    if ((p = r->fieldmap[KEY_RAID6_SSD]))
-    	khttp_puts(r, p->parsed.s);
-
 	optimization(r);
 	khtml_close(&req);
 

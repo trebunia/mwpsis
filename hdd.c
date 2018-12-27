@@ -60,7 +60,7 @@ bool generate_data(struct kreq *r){
 	myfile.open ("/var/www/html/cgi-bin/data.txt");
 
 	if ( r->fieldmap[KEY_HDD_8] && r->fieldmap[KEY_HDD_6] && r->fieldmap[KEY_SSD_1] && r->fieldmap[KEY_SSD_512] && r->fieldmap[KEY_RAID1_HDD] && r->fieldmap[KEY_RAID5_HDD] && r->fieldmap[KEY_RAID6_HDD] && r->fieldmap[KEY_RAID1_SSD] && r->fieldmap[KEY_RAID5_SSD] && r->fieldmap[KEY_RAID6_SSD] ) {
-    
+
 	//generate disk number data
 	myfile << "data;\n";
 	myfile << "param N := 1 " << r->fieldmap[KEY_HDD_8]->parsed.i << "\n";
@@ -78,7 +78,7 @@ bool generate_data(struct kreq *r){
 
 	//generate V
 	myfile << "param V := 1 1\n\t2 1\n\t3 1\n\t4 1;\n\n";
-	
+
 	myfile << "param S := 1 1\n\t2 1\n\t3 1\n\t4 1;\n\n";
 
 	myfile << "param R := 1 1\n\t5 1\n\t6 1;\n\n";
@@ -88,7 +88,19 @@ bool generate_data(struct kreq *r){
 	return 0;
 
 	} else {
-		std::cout << "Niepoprawnie wprowadzone parametry";
+		std::cout << "<!DOCTYPE html> \
+    				<html> \
+    				<head> \
+    				<title>Solve your database design problems!</title> \
+            <meta charset=\"UTF-8\">\
+    				<link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"> \
+    				</head> \
+    				<body> \
+            Niepoprawnie wprowadzone parametry <br>\
+            <a href=\"index\">Powrót do strony głównej </a>\
+    				</body>\
+    				</html>";
+
 		return 1;
 	}
 	} catch (...) {
@@ -126,7 +138,7 @@ sql::ResultSet* run_query(std::string query)
 }
 
 int exe_query(std::string query)
-{   
+{
   int res;
     try {
   sql::Driver *driver;
@@ -148,7 +160,7 @@ int exe_query(std::string query)
   std::cout << "# ERR: SQLException in " << __FILE__;
   std::cout << "(" << __FUNCTION__ << ") on line " \
      << __LINE__ << std::endl;
-  std::cout << "# ERR: " << e.what(); 
+  std::cout << "# ERR: " << e.what();
   std::cout << " (MySQL error code: " << e.getErrorCode();
   std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
   return res;
@@ -218,7 +230,7 @@ std::cout << "<!DOCTYPE html> \
 				<div class=\"loader\"></div>\
 				<p id=\"start_time\">Solver already running for: "
                 << res->getString("unique_id")
-				<< "</p> Optimalization start time: " 
+				<< "</p> Optimalization start time: "
                 << res->getString("start_time")
 			    << "</div> \
 				</div> \
@@ -251,7 +263,7 @@ static void optimization(struct kreq *r) {
     const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	if (generate_data(r) == 0) {
-	
+
 		if (system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1") == 0) {
 			std::string unique_id;
 			unique_id = gen_random();
@@ -264,7 +276,7 @@ static void optimization(struct kreq *r) {
 			exe_query(query);
 			std::string msg;
 			msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
-		
+
 			std::ifstream myfile;
 		    myfile.open("/var/www/html/cgi-bin/output.csv");
 			out = "";
@@ -277,9 +289,9 @@ static void optimization(struct kreq *r) {
 				  myfile.close();
 				  print_results(msg);
 				}
-		
+
 			else {
-				msg += "Unable to open file"; 
+				msg += "Unable to open file";
 				print_results(msg);
 				}
 			exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
@@ -334,7 +346,7 @@ int main(void) {
   struct kreq r;
   enum khttp er;
   if (KCGI_OK != khttp_parse(&r, keys, KEY__MAX,
-      pages, PAGE__MAX, PAGE_INDEX))  
+      pages, PAGE__MAX, PAGE_INDEX))
     return 0;
   if (KHTTP_200 != (er = sanitise(&r))) {
     khttp_head(&r, kresps[KRESP_STATUS],
@@ -355,5 +367,3 @@ int main(void) {
   khttp_free(&r);
   return 0;
 };
-
-

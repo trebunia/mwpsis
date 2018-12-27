@@ -42,16 +42,16 @@ enum key {
 
 
 static const struct kvalid keys[KEY__MAX] = {
-    { kvalid_stringne, "HDD_8" },
-    { kvalid_stringne, "HDD_6" },
-    { kvalid_stringne, "SSD_1" },
-    { kvalid_stringne, "SSD_512" },
-    { kvalid_stringne, "RAID1_HDD" },
-    { kvalid_stringne, "RAID5_HDD" },
-    { kvalid_stringne, "RAID6_HDD" },
-    { kvalid_stringne, "RAID1_SSD" },
-    { kvalid_stringne, "RAID5_SSD" },
-    { kvalid_stringne, "RAID6_SSD" }
+    { kvalid_int, "HDD_8" },
+    { kvalid_int, "HDD_6" },
+    { kvalid_int, "SSD_1" },
+    { kvalid_int, "SSD_512" },
+    { kvalid_double, "RAID1_HDD" },
+    { kvalid_double, "RAID5_HDD" },
+    { kvalid_double, "RAID6_HDD" },
+    { kvalid_double, "RAID1_SSD" },
+    { kvalid_double, "RAID5_SSD" },
+    { kvalid_double, "RAID6_SSD" }
 };
 
 static void generate_data(struct kreq *r){
@@ -60,17 +60,17 @@ static void generate_data(struct kreq *r){
 
 	//generate disk number data
 	myfile << "data;\n";
-	myfile << "param N := 1 " << r->fieldmap[KEY_HDD_8]->parsed.s << "\n";
-	myfile << "\t 2 " << r->fieldmap[KEY_HDD_6]->parsed.s << "\n";
-	myfile << "\t 3 " << r->fieldmap[KEY_SSD_1]->parsed.s << "\n";
-	myfile << "\t 4 " << r->fieldmap[KEY_SSD_512]->parsed.s << ";\n";
+	myfile << "param N := 1 " << r->fieldmap[KEY_HDD_8]->parsed.i << "\n";
+	myfile << "\t 2 " << r->fieldmap[KEY_HDD_6]->parsed.i << "\n";
+	myfile << "\t 3 " << r->fieldmap[KEY_SSD_1]->parsed.i << "\n";
+	myfile << "\t 4 " << r->fieldmap[KEY_SSD_512]->parsed.i << ";\n";
 	myfile << "\n";
 
 	//generate disk price data
 	myfile << "param C : 1 2 3 4 := \n";
-	myfile << "\t 1 " << r->fieldmap[KEY_RAID1_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID1_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID1_SSD]->parsed.s << " " << r->fieldmap[KEY_RAID1_SSD]->parsed.s << "\n";
-    myfile << "\t 5 " << r->fieldmap[KEY_RAID5_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID5_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID5_SSD]->parsed.s << " " << r->fieldmap[KEY_RAID5_SSD]->parsed.s << "\n";
-    myfile << "\t 6 " << r->fieldmap[KEY_RAID6_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID6_HDD]->parsed.s << " " << r->fieldmap[KEY_RAID6_SSD]->parsed.s << " " << r->fieldmap[KEY_RAID6_SSD]->parsed.s << ";\n";
+	myfile << "\t 1 " << r->fieldmap[KEY_RAID1_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID1_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID1_SSD]->parsed.d << " " << r->fieldmap[KEY_RAID1_SSD]->parsed.d << "\n";
+    myfile << "\t 5 " << r->fieldmap[KEY_RAID5_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID5_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID5_SSD]->parsed.d << " " << r->fieldmap[KEY_RAID5_SSD]->parsed.d << "\n";
+    myfile << "\t 6 " << r->fieldmap[KEY_RAID6_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID6_HDD]->parsed.d << " " << r->fieldmap[KEY_RAID6_SSD]->parsed.d << " " << r->fieldmap[KEY_RAID6_SSD]->parsed.d << ";\n";
 	myfile << "\n";
 
 	//generate V

@@ -54,10 +54,13 @@ static const struct kvalid keys[KEY__MAX] = {
     { kvalid_double, "RAID6_SSD" }
 };
 
-static void generate_data(struct kreq *r){
+bool generate_data(struct kreq *r){
+	try {
 	std::ofstream myfile;
 	myfile.open ("/var/www/html/cgi-bin/data.txt");
 
+	if ( r->fieldmap[KEY_HDD_8] && r->fieldmap[KEY_HDD_6] && r->fieldmap[KEY_SSD_1] && r->fieldmap[KEY_SSD_512] && r->fieldmap[KEY_RAID1_HDD] && r->fieldmap[KEY_RAID5_HDD] && r->fieldmap[KEY_RAID6_HDD] && r->fieldmap[KEY_RAID1_SSD] && r->fieldmap[KEY_RAID5_SSD] && r->fieldmap[KEY_RAID6_SSD] ) {
+    
 	//generate disk number data
 	myfile << "data;\n";
 	myfile << "param N := 1 " << r->fieldmap[KEY_HDD_8]->parsed.i << "\n";
@@ -81,6 +84,16 @@ static void generate_data(struct kreq *r){
 	myfile << "param R := 1 1\n\t5 1\n\t6 1;\n\n";
 	myfile << "end;";
 	myfile.close();
+
+	return 0;
+
+	} else {
+		std::cout << "Niepoprawnie wprowadzone parametry";
+		return 1;
+	}
+	} catch (...) {
+		std::cout << "Generowanie danych do symulacji nie udalo sie";
+	}
 }
 
 sql::ResultSet* run_query(std::string query)
@@ -237,40 +250,41 @@ static void optimization(struct kreq *r) {
 	std::string out;
     const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
- 	generate_data(r);
-
-	system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1");
+ 	if (generate_data(r) == 0) {
 	
-	std::string unique_id;
-	unique_id = gen_random();
-	std::string query;
-	query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
-	exe_query(query);
-	print_results("<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " + unique_id);
-	system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
-	query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
-	exe_query(query);
-	std::string msg;
-	msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
-
-	std::ifstream myfile;
-    myfile.open("/var/www/html/cgi-bin/output.csv");
-	out = "";
-	if (myfile.is_open())
-		{
-		 while ( getline (myfile,line) )
-		 	{
-		      msg += "\n<p>" + line + "\n";
-		    }
-		  myfile.close();
-		  print_results(msg);
-		}
-
-	else {
-		msg += "Unable to open file"; 
-		print_results(msg);
+		if (system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1") == 0) {
+			std::string unique_id;
+			unique_id = gen_random();
+			std::string query;
+			query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
+			exe_query(query);
+			print_results("<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " + unique_id);
+			system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
+			query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
+			exe_query(query);
+			std::string msg;
+			msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
+		
+			std::ifstream myfile;
+		    myfile.open("/var/www/html/cgi-bin/output.csv");
+			out = "";
+			if (myfile.is_open())
+				{
+				 while ( getline (myfile,line) )
+				 	{
+				      msg += "\n<p>" + line + "\n";
+				    }
+				  myfile.close();
+				  print_results(msg);
+				}
+		
+			else {
+				msg += "Unable to open file"; 
+				print_results(msg);
+				}
+			exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
+			}
 	}
-	exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
 
 }
 

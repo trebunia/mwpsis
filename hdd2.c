@@ -167,6 +167,17 @@ std::string gen_random() {
     for (int i = 0; i < len; ++i) {
         s += alphanum[rand() % (sizeof(alphanum) - 1)];
     }
+	sql::ResultSet *res;
+	res = run_query("select unique_id from optymalizacje where unique_id = '" + s + "';");
+
+	// jesli wylosowany ID juz istnieje to losuj nowy dopoki nie bedzie unikalny
+	while(!res->next()) {
+	    srand(time(0));
+   		for (int i = 0; i < len; ++i) {
+       		 s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    	}
+
+	}
     return s;
 }
 
@@ -219,49 +230,43 @@ static void optimization(struct kreq *r) {
 	char* data;
 	std::string line;
 	std::string out;
-        const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
+    const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	generate_data(r);
 
 	system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1");
 	
-	if (running() == 0){
+	std::string unique_id;
+	unique_id = gen_random();
+	std::string query;
+	query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
+	exe_query(query);
+	print_results("<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " + unique_id);
+	system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
+	query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
+	exe_query(query);
+	std::string msg;
+	msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
 
-		std::string unique_id;
-		unique_id = gen_random();
-		std::string query;
-		query = "insert into optymalizacje (unique_id, status) values ('" + unique_id + "', 'inprogress');";
-		exe_query(query);
-		print_results("<p>Uruchamianie optymalizacji. Unikalny kod optymalizacji to " + unique_id);
-		system("/usr/local/bin/cbc /var/www/html/cgi-bin/model.mps -max -solve -solu /var/www/html/cgi-bin/output.csv >> /dev/null 2>&1");
-		query = "update optymalizacje set status = 'finished' where unique_id = '" + unique_id + "';";
-		exe_query(query);
-		std::string msg;
-		msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
-
-	        std::ifstream myfile;
-       		myfile.open("/var/www/html/cgi-bin/output.csv");
-		out = "";
-		if (myfile.is_open())
-		  {
-		    while ( getline (myfile,line) )
-		    {
+	std::ifstream myfile;
+    myfile.open("/var/www/html/cgi-bin/output.csv");
+	out = "";
+	if (myfile.is_open())
+		{
+		 while ( getline (myfile,line) )
+		 	{
 		      msg += "\n<p>" + line + "\n";
 		    }
-		    myfile.close();
-		    print_results(msg);
-		  }
-
-		else {
-		     msg += "Unable to open file"; 
-		     print_results(msg);
+		  myfile.close();
+		  print_results(msg);
 		}
-		exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
 
-
-	} else {
-		print_loading();
+	else {
+		msg += "Unable to open file"; 
+		print_results(msg);
 	}
+	exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");
+
 }
 
 static void process_safe(struct kreq *r) {
@@ -269,7 +274,13 @@ static void process_safe(struct kreq *r) {
 	struct khtmlreq req;
 	khtml_open(&req, r, 0);
 	khtml_elem(&req, KELEM_P);
-	optimization(r);
+
+	if (running() == 0) {
+		optimization(r);
+	} else {
+        print_loading();
+	}
+
 	khtml_close(&req);
 
 }

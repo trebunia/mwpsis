@@ -263,7 +263,7 @@ static void optimization(struct kreq *r) {
     const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	if (generate_data(r) == 0) {
-		if (system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1") == 0) {
+		if (system("/usr/bin/glpsol --check --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1") == 0) {
 			std::string unique_id;
 			unique_id = gen_random();
 			std::string query;

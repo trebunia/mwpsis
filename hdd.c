@@ -97,7 +97,7 @@ bool generate_data(struct kreq *r){
     				</head> \
     				<body> \
             Niepoprawnie wprowadzone parametry <br>\
-            <a href=\"index\">Powrót do strony głównej </a>\
+            <a href=\"../index.html\">Powrót do strony głównej </a>\
     				</body>\
     				</html>";
 
@@ -263,11 +263,6 @@ static void optimization(struct kreq *r) {
     const char* filename = "/var/www/html/cgi-bin/model-projekt4.mod";
  	const char* data_file = "/var/www/html/cgi-bin/data.txt";
  	if (generate_data(r) == 0) {
-<<<<<<< HEAD
-	
-=======
-
->>>>>>> 86a3ac12ef0c760c572b2c514cb22e4897e57f94
 		if (system("/usr/bin/glpsol --math /var/www/html/cgi-bin/model-projekt4.mod -d /var/www/html/cgi-bin/data.txt --wmps /var/www/html/cgi-bin/model.mps >> /dev/null 2>&1") == 0) {
 			std::string unique_id;
 			unique_id = gen_random();
@@ -280,11 +275,6 @@ static void optimization(struct kreq *r) {
 			exe_query(query);
 			std::string msg;
 			msg = "<p>Optymalizacja (kod " + unique_id + ") zostala ukonczona";
-<<<<<<< HEAD
-		
-=======
-
->>>>>>> 86a3ac12ef0c760c572b2c514cb22e4897e57f94
 			std::ifstream myfile;
 		    myfile.open("/var/www/html/cgi-bin/output.csv");
 			out = "";
@@ -297,15 +287,8 @@ static void optimization(struct kreq *r) {
 				  myfile.close();
 				  print_results(msg);
 				}
-<<<<<<< HEAD
-		
-			else {
-				msg += "Unable to open file"; 
-=======
-
 			else {
 				msg += "Unable to open file";
->>>>>>> 86a3ac12ef0c760c572b2c514cb22e4897e57f94
 				print_results(msg);
 				}
 			exe_query("update optymalizacje set wynik = '" + out + "' where unique_id = '" + unique_id + "';");

@@ -7,6 +7,10 @@ body {
   padding: 50px 0;
 }
 
+a {
+  text-decoration: none;
+}
+
 #container {
   width: 80%;
   max-width: 1200px;

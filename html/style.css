@@ -9,6 +9,11 @@ body {
 
 a {
   text-decoration: none;
+  color: inherit;
+}
+
+a:hover{
+  font-weight: bold;
 }
 
 #container {
@@ -19,9 +24,21 @@ a {
 
 .container * {
   box-sizing: border-box;
+  text-align: center;
 }
 
 /*index.html*/
+
+#history{
+  margin: auto;
+margin-right: 50px;
+border-style: solid;
+border-radius: 5px;
+  font-size: 30px;
+  text-align: center;
+  max-width: 150px;
+  margin-bottom: 15px;
+}
 
 form{
   margin: auto;
@@ -68,6 +85,10 @@ form{
   text-transform: uppercase;
   letter-spacing: .09em;
   border-radius: 2px;
+}
+
+.flex-outer li button:hover {
+font-weight: bold;
 }
 
 /*loading page*/
